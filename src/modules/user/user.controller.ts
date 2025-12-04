@@ -1,34 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
-@Controller('user')
+@ApiTags('users')
+@Controller('users')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private usersService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Get('profile')
+  async getProfile(@Request() req) {
+    const user = await this.usersService.findById(req.user.id);
+    const { password, ...result } = user;
+    return result;
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Put('profile')
+  async updateProfile(@Request() req, @Body() updateData: any) {
+    const { password, email, role, ...allowedData } = updateData;
+    const updatedUser = await this.usersService.update(req.user.id, allowedData);
+    const { password: _, ...result } = updatedUser;
+    return result;
   }
 }

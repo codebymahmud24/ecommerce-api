@@ -6,8 +6,9 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { Request, Response } from 'express';
 import { db } from './database';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -22,6 +23,9 @@ async function bootstrap() {
   const nodeEnv = configService.get('NODE_ENV') || 'development';
   const port = configService.get('PORT') || 3000;
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
+
+  // Cookies
+  app.use(cookieParser());
 
   // Security
   app.use(helmet());
@@ -61,6 +65,9 @@ async function bootstrap() {
 
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // Global filters
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Enable shutdown hooks for graceful shutdown
   app.enableShutdownHooks();
