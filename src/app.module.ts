@@ -4,8 +4,8 @@ import { RateLimiterModule } from "nestjs-rate-limiter"
 import { HealthController } from './modules/health/health.controller';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './modules/user/user.module';
-import { ProductModule } from './modules/product/product.module';
+import { UserModule } from './modules/users/user.module';
+import { ProductModule } from './modules/products/product.module';
 import { OrderModule } from './modules/order/order.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { CartModule } from './modules/cart/cart.module';

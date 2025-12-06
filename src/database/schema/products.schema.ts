@@ -1,13 +1,6 @@
 import { pgTable, uuid, varchar, text, decimal, integer, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { categories } from './categories.schema';
 
-// Categories table
-export const categories = pgTable('categories', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  name: varchar('name', { length: 100 }).notNull(),
-  slug: varchar('slug', { length: 100 }).notNull().unique(),
-  description: text('description'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
 
 // Products table
 export const products = pgTable('products', {

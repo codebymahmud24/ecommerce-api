@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { users } from '../../database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { users } from '../../database/schema';
 
 
 @Injectable()
@@ -11,6 +11,7 @@ export class UserService {
     const [user] = await this.db.insert(users).values(userData).returning();
     return user;
   }
+
 
   async findByEmail(email: string) {
     try {

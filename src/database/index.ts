@@ -10,11 +10,10 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Combine all schemas into one object
-const schema = {
-  ...users,
-  ...products,
-  ...categories,
+export const schema = {
+  users,
+  products,
+  categories,
 };
 
 export const db = drizzle(pool, { schema });

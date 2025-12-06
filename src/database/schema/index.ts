@@ -1,2 +1,4 @@
 export * from './users.schema';
-export { categories, products } from './products.schema';
+export * from './products.schema';
+export * from './categories.schema';
+export * from "./inventory.schema"
