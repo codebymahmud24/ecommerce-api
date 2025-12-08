@@ -20,7 +20,7 @@ import type { Response } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  
+
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   async register(
@@ -35,7 +35,7 @@ export class AuthController {
       user: data.user,
     };
   }
-  
+
   @Post('login')
   @ApiOperation({ summary: 'Login user' })
   async login(
@@ -50,7 +50,7 @@ export class AuthController {
       user: data.user,
     };
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiBearerAuth()
@@ -79,7 +79,7 @@ export class AuthController {
       throw error;
     }
   }
-  
+
   private setCookie(res: Response, token: string) {
     res.cookie('access_token', token, {
       httpOnly: true,

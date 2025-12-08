@@ -1,6 +1,6 @@
 import { Controller, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('users')
@@ -8,7 +8,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UserController {
-  constructor(private usersService: UserService) {}
+  constructor(private usersService: UsersService) {}
 
   @Get('profile')
   async getProfile(@Request() req) {
@@ -20,7 +20,10 @@ export class UserController {
   @Put('profile')
   async updateProfile(@Request() req, @Body() updateData: any) {
     const { password, email, role, ...allowedData } = updateData;
-    const updatedUser = await this.usersService.update(req.user.id, allowedData);
+    const updatedUser = await this.usersService.update(
+      req.user.id,
+      allowedData,
+    );
     const { password: _, ...result } = updatedUser;
     return result;
   }

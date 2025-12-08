@@ -1,6 +1,6 @@
-import { db } from "./index";
+import { db } from './index';
 
 export const DatabaseProvider = {
-  provide: "DATABASE",
+  provide: 'DATABASE',
   useValue: db,
 };

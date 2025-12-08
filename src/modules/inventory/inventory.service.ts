@@ -1,26 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { CreateInventoryDto } from './dto/create-inventory.dto';
-import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { schema } from 'src/database';
+import { inventory } from 'src/database/schema';
 
 @Injectable()
 export class InventoryService {
-  create(createInventoryDto: CreateInventoryDto) {
-    return 'This action adds a new inventory';
-  }
+  private readonly logger = new Logger(InventoryService.name);
+  private readonly RESERVATION_TTL_MINUTES = 15;
+  constructor(
+    @Inject('DATABASE') private db: NodePgDatabase<typeof schema>,
+  ) {}
 
-  findAll() {
-    return `This action returns all inventory`;
-  }
+  // ----- Create empty inventory during product creation-----
+  async createInitialInventory(productId: string) {
+    const [row] = await this.db
+      .insert(inventory)
+      .values({
+        productId,
+        quantity: 0,
+        reserved: 0,
+      })
+      .returning();
 
-  findOne(id: number) {
-    return `This action returns a #${id} inventory`;
-  }
-
-  update(id: number, updateInventoryDto: UpdateInventoryDto) {
-    return `This action updates a #${id} inventory`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} inventory`;
+    return row;
   }
 }

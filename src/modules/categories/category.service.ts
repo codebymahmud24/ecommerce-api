@@ -12,18 +12,16 @@ import { schema } from 'src/database';
 
 @Injectable()
 export class CategoryService {
-  constructor(@Inject('DATABASE') private db: NodePgDatabase<typeof schema>) {}
+  constructor(@Inject('DATABASE_CONNECTION') private db: NodePgDatabase<typeof schema>) {}
 
-  /**
-   * Create a new category
-   */
+  // -------------- Create a new category --------------
   async create(createCategoryDto: CreateCategoryDto) {
     // modify the slug to make it URL-friendly
     createCategoryDto.slug = createCategoryDto.slug
       .trim()
       .toLowerCase()
       .replace(/\s+/g, '-');
-      
+
     // Check if slug already exists
     const [existingCategory] = await this.db
       .select()
@@ -42,9 +40,7 @@ export class CategoryService {
     return category;
   }
 
-  /**
-   * Get all categories with product counts
-   */
+/// -------------- Get all categories --------------
   async findAll() {
     const categoriesWithCount = await this.db
       .select({
@@ -62,9 +58,7 @@ export class CategoryService {
     return categoriesWithCount;
   }
 
-  /**
-   * Get category by ID with products
-   */
+  // -------------- Get one category by ID --------------
   async findOne(id: string) {
     const [category] = await this.db
       .select()
@@ -94,9 +88,7 @@ export class CategoryService {
     };
   }
 
-  /**
-   * Get category by slug
-   */
+  // -------------- Get one category by Slug --------------
   async findBySlug(slug: string) {
     // modify the slug to make it URL-friendly
     slug = slug.trim().toLowerCase().replace(/\s+/g, '-');
@@ -130,9 +122,7 @@ export class CategoryService {
     };
   }
 
-  /**
-   * Update category
-   */
+  // -------------- Update an existing category --------------
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     // Check if category exists
     const [existingCategory] = await this.db
@@ -175,9 +165,7 @@ export class CategoryService {
     return updatedCategory;
   }
 
-  /**
-   * Delete category (only if no products)
-   */
+  // ---- Delete an existing category if it doesn't have any products --------
   async remove(id: string) {
     // Check if category exists
     const [category] = await this.db
@@ -208,9 +196,7 @@ export class CategoryService {
     return { message: 'Category deleted successfully' };
   }
 
-  /**
-   * Search categories by name
-   */
+  // -------------- Search for categories --------------
   async search(query: string) {
     const results = await this.db
       .select({
@@ -228,9 +214,7 @@ export class CategoryService {
     return results;
   }
 
-  /**
-   * Get popular categories (most products)
-   */
+  // -------------- Get top-selling categories --------------
   async getPopular(limit = 10) {
     const popularCategories = await this.db
       .select({

@@ -1,6 +1,14 @@
-import { pgTable, uuid, varchar, text, decimal, integer, timestamp, boolean } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  decimal,
+  integer,
+  timestamp,
+  boolean,
+} from 'drizzle-orm/pg-core';
 import { categories } from './categories.schema';
-
 
 // Products table
 export const products = pgTable('products', {
