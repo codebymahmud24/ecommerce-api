@@ -86,7 +86,7 @@ export class AuthController {
       secure: false, // Set to true in production with HTTPS
       sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 1000, // 1 hour
+      maxAge:  24 * 60 * 60 * 1000, // 24 hour
     });
   }
 }

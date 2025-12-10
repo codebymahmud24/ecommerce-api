@@ -13,7 +13,8 @@ export class InventoryService {
 
   // ----- Create empty inventory during product creation-----
   async createInitialInventory(productId: string) {
-    const [row] = await this.db
+    try {
+      const [row] = await this.db
       .insert(inventory)
       .values({
         productId,
@@ -23,5 +24,8 @@ export class InventoryService {
       .returning();
 
     return row;
+    } catch (error) {
+      Logger.error(error.message);
+    }
   }
 }

@@ -8,17 +8,17 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { db } from './database';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-const cookieParser = require('cookie-parser');
+import  cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   
   // Create Nest app
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    logger: ['error', 'warn',   'debug', 'verbose'],
   });
 
-  console.log('🔥 HOT RELOAD WORKS , Is it', new Date().toISOString());
+  logger.verbose('🔥 HOT RELOAD WORKS , Is it' + new Date().toISOString());
 
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get('NODE_ENV') || 'development';
@@ -76,36 +76,36 @@ async function bootstrap() {
   try {
     // Test DB connection
     await db.execute('SELECT 1');
-    console.warn('✅ Database connection successful!');
+    logger.verbose('✅ Database connection successful!');
   } catch (err) {
-    console.error('❌ Database connection failed:', err);
+    logger.verbose('❌ Database connection failed:', err);
   }
 
   // Start server
   await app.listen(port);
   
-  logger.log(`🚀 Application running in ${nodeEnv} mode`);  // Fixed: added opening backtick
-  logger.log(`🌐 Server: http://localhost:${port}`);  // Fixed: added opening backtick
-  logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);  // Fixed: added opening backtick
-  logger.log(`🔐 API Prefix: /${apiPrefix}`);  // Fixed: added opening backtick
-  logger.log(`📊 Health Check: http://localhost:${port}/health`);  // Fixed: added opening backtick
+  logger.verbose(`🚀 Application running in ${nodeEnv} mode`);  // Fixed: added opening backtick
+  logger.verbose(`🌐 Server: http://localhost:${port}`);  // Fixed: added opening backtick
+  logger.verbose(`📚 Swagger Docs: http://localhost:${port}/api/docs`);  // Fixed: added opening backtick
+  logger.verbose(`🔐 API Prefix: /${apiPrefix}`);  // Fixed: added opening backtick
+  logger.verbose(`📊 Health Check: http://localhost:${port}/health`);  // Fixed: added opening backtick
 
   if (nodeEnv === 'development') {
-    logger.warn('⚠️  Running in DEVELOPMENT mode');
+    logger.verbose('⚠️  Running in DEVELOPMENT mode');
     logger.warn('⚠️  Make sure to set NODE_ENV=production before deploying');
   }
 
   // Graceful shutdown and error handling
   process.on('SIGTERM', async () => {
-    logger.log('SIGTERM received, shutting down...');
+    logger.warn('SIGTERM received, shutting down...');
     await app.close();
-    logger.log('HTTP server closed');
+    logger.warn('HTTP server closed');
   });
 
   process.on('SIGINT', async () => {
-    logger.log('SIGINT received, shutting down...');
+    logger.warn('SIGINT received, shutting down...');
     await app.close();
-    logger.log('HTTP server closed');
+    logger.warn('HTTP server closed');
   });
 
   process.on('uncaughtException', (error) => {
