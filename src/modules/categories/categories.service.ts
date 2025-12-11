@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,15 +11,25 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, ilike, like, sql } from 'drizzle-orm';
 import { categories, products } from 'src/database/schema';
 import { schema } from 'src/database';
+import {
+  CategoryResponse,
+  CategoryResponseWithProducts,
+} from './dto/categoryResponse.dto';
 
 @Injectable()
 export class CategoriesService {
+  private logger = new Logger(CategoriesService.name);
   constructor(@Inject('DATABASE') private db: NodePgDatabase<typeof schema>) {}
 
-  // -------------- Create a new category --------------
-  async create(createCategoryDto: CreateCategoryDto) {
+  /**
+   * --------------------- Create a new category -------------
+   * @param createCategoryDto
+   * @returns  Promise<CategoryResponse>
+   */
+  async create(
+    createCategoryDto: CreateCategoryDto,
+  ): Promise<CategoryResponse> {
     try {
-
       // Check if slug already exists
       const [existingCategory] = await this.db
         .select()
@@ -36,12 +47,17 @@ export class CategoriesService {
 
       return category;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error(error);
+      if (error instanceof ConflictException) throw error;
+      throw new InternalServerErrorException('Failed to create category');
     }
   }
 
-  /// -------------- Get all categories --------------
-  async findAll() {
+  /**
+   * ------------------- Get all categories -------------
+   * @returns Promise<CategoryResponse[]> | []
+   */
+  async findAll(): Promise<CategoryResponse[] | []> {
     try {
       const categoriesWithCount = await this.db
         .select({
@@ -58,12 +74,17 @@ export class CategoriesService {
 
       return categoriesWithCount;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error fetching categories', error.stack);
+      throw new InternalServerErrorException('Failed to fetch categories');
     }
   }
 
-  // -------------- Get one category by ID --------------
-  async findOne(id: string) {
+  /**
+   * ------------ Get one category by ID -------------
+   * @param id
+   * @returns Promise<CategoryResponseWithProducts | []>
+   */
+  async findOne(id: string): Promise<CategoryResponseWithProducts | []> {
     try {
       const [category] = await this.db
         .select()
@@ -80,6 +101,7 @@ export class CategoriesService {
           id: products.id,
           name: products.name,
           price: products.price,
+          description: products.description,
           imageUrl: products.imageUrl,
           isActive: products.isActive,
         })
@@ -92,12 +114,18 @@ export class CategoriesService {
         productCount: categoryProducts.length,
       };
     } catch (error) {
-      Logger.error(error);
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error(`Error finding category ${id}`, error.stack);
+      throw new InternalServerErrorException('Failed to fetch category');
     }
   }
 
-  // -------------- Get one category by Slug --------------
-  async findBySlug(slug: string) {
+  /**
+   * ------------- Find category by slug -------------
+   * @param slug
+   * @returns Promise<CategoryResponseWithProducts | []>
+   */
+  async findBySlug(slug: string): Promise<CategoryResponseWithProducts | []> {
     try {
       const [category] = await this.db
         .select()
@@ -127,12 +155,22 @@ export class CategoriesService {
         productCount: categoryProducts.length,
       };
     } catch (error) {
-      Logger.error(error);
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error(`Error finding category by slug: ${slug}`, error.stack);
+      throw new InternalServerErrorException('Failed to fetch category');
     }
   }
 
-  // -------------- Update an existing category --------------
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+  /**
+   * ------------- Update an existing category -------------
+   * @param id
+   * @param updateCategoryDto
+   * @returns Promise<CategoryResponse>
+   */
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<CategoryResponse> {
     try {
       // Check if category exists
       const [existingCategory] = await this.db
@@ -167,12 +205,23 @@ export class CategoriesService {
 
       return updatedCategory;
     } catch (error) {
-      Logger.error(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+      this.logger.error(`Error updating category ${id}`, error.stack);
+      throw new InternalServerErrorException('Failed to update category');
     }
   }
 
-  // ---- Delete an existing category if it doesn't have any products --------
-  async remove(id: string) {
+  /**
+   * ------------- Delete an existing category and its associated products exist, delete them first -------------
+   * @param id
+   * @returns Promise<{message:string}>
+   */
+  async remove(id: string): Promise<{ message: string }> {
     try {
       // Check if category exists
       const [category] = await this.db
@@ -202,12 +251,20 @@ export class CategoriesService {
 
       return { message: 'Category deleted successfully' };
     } catch (error) {
-      Logger.error(error);
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      }
+      this.logger.error(`Error deleting category ${id}`, error.stack);
+      throw new InternalServerErrorException('Failed to delete category');
     }
   }
 
-  // -------------- Search for categories --------------
-  async search(query: string) {
+  /**
+   * ------------- Search for categories based on the provided query -------------
+   * @param query
+   * @returns Promise<CategoryResponse[] | []>
+   */
+  async search(query: string): Promise<CategoryResponse[] | []> {
     try {
       // query = query.replace(/"/g, '');
       const results = await this.db
@@ -225,12 +282,17 @@ export class CategoriesService {
 
       return results;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error searching categories', error.stack);
+      throw new InternalServerErrorException('Failed to search categories');
     }
   }
 
-  // -------------- Get top-selling categories --------------
-  async getPopular(limit = 10) {
+  /**
+   * ------------- Get top N most popular categories -------------
+   * @param limit
+   * @returns Promise<CategoryResponse[] | []>
+   */
+  async getPopular(limit = 10): Promise<CategoryResponse[] | []> {
     try {
       const popularCategories = await this.db
         .select({
@@ -248,7 +310,8 @@ export class CategoriesService {
 
       return popularCategories;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error fetching popular categories', error.stack);
+      throw new InternalServerErrorException('Failed to fetch popular categories');
     }
   }
 }

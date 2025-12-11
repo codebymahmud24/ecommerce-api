@@ -1,13 +1,14 @@
+import { AuthResponse } from './dto/auth-response.dto';
 import {
   ConflictException,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import {  UsersService } from '../users/users.service';
+import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto, RegisterDto } from './dto';
 import * as bcrypt from 'bcrypt';
+import {  UserWithoutPassword } from 'src/database/schema';
 
 @Injectable()
 export class AuthService {
@@ -16,61 +17,80 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
-    try {
-      // console.log("registerDto", registerDto);
+  /**
+   * --------------- Register a new user -----------------
+   * @param registerDto
+   * @returns Promise<AuthResponse>
+   */
+  async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const existingUser = await this.userService.findByEmail(registerDto.email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
     const user = await this.userService.create({
       ...registerDto,
       password: hashedPassword,
     });
 
-    const { password, ...result } = user;
-    const token = this.generateToken(user.id, user.email, user.role);
+    const { password, ...userWithoutPassword } = user;
+    const access_token = this.generateToken(user.id, user.email, user.role);
 
     return {
-      user: result,
-      access_token: token,
+      user : userWithoutPassword,
+      access_token,
     };
-    } catch (error) {
-      Logger.error(error);
-      throw error;
-    }
   }
 
-  async login(loginDto: LoginDto) {
+  /**
+   * --------------- Login User -----------------
+   * @param loginDto
+   * @returns Promise<AuthResponse>
+   */
+  async login(loginDto: LoginDto): Promise<AuthResponse> {
     const user = await this.userService.findByEmail(loginDto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const { password, ...result } = user;
-    const token = this.generateToken(user.id, user.email, user.role);
+    const { password, ...userWithoutPassword } = user;
+    const access_token = this.generateToken(user.id, user.email, user.role);
 
     return {
-      user: result,
-      access_token: token,
+      user: userWithoutPassword,
+      access_token,
     };
   }
 
-  async validateUser(userId: string) {
-    return this.userService.findById(userId);
+  /**
+   * --------------- Validate User -----------------
+   * @param userId
+   * @returns Promise<User>
+   */
+  async validateUser(userId: string): Promise<UserWithoutPassword | null> {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
-  private generateToken(userId: string, email: string, role: string) {
+  /**
+   * --------------- Generate Token -----------------
+   * @param userId
+   * @param email
+   * @param role
+   * @returns string
+   */
+  private generateToken(userId: string, email: string, role: string): string {
     const payload = { sub: userId, email, role };
     return this.jwtService.sign(payload);
   }
