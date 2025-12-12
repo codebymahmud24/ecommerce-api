@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
@@ -61,6 +62,7 @@ export class InventoryService {
     userId?: string,
     sessionId?: string,
   ): Promise<ReservationResult | null> {
+    try{
     return await this.db.transaction(async (tx) => {
       // Use FOR UPDATE to lock the row and prevent concurrent modifications
       const [inventoryRecord] = await tx
@@ -116,8 +118,13 @@ export class InventoryService {
         reservationId: reservation.id,
         expiresAt: reservation.expiresAt,
       };
+
     });
+  } catch (error) {
+    this.logger.error('Error reserving inventory', error);
+    throw new InternalServerErrorException('Failed to reserve inventory');
   }
+}
 
   /**
    * ---- Confirm reservation and deduct from actual inventory (called after payment success) ------
@@ -125,7 +132,8 @@ export class InventoryService {
    * @returns Promise<void>
    */
   async confirmReservation(reservationId: string): Promise<void> {
-    await this.db.transaction(async (tx) => {
+    try {
+      await this.db.transaction(async (tx) => {
       const [reservation] = await tx
         .select()
         .from(inventoryReservations)
@@ -156,6 +164,10 @@ export class InventoryService {
 
       this.logger.log(`Confirmed reservation ${reservationId}`);
     });
+    } catch (error) {
+      this.logger.error(`Error confirming reservation ${reservationId}: ${error}`);
+      throw new InternalServerErrorException('Failed to confirm reservation');
+    }
   }
 
   /**
@@ -164,7 +176,8 @@ export class InventoryService {
    * @returns Promise<void>
    */
   async cancelReservation(reservationId: string): Promise<void> {
-    await this.db.transaction(async (tx) => {
+      try {
+        await this.db.transaction(async (tx) => {
       const [reservation] = await tx
         .select()
         .from(inventoryReservations)
@@ -190,6 +203,10 @@ export class InventoryService {
 
       this.logger.log(`Cancelled reservation ${reservationId}`);
     });
+      } catch (error) {
+        this.logger.error(`Error cancelling reservation ${reservationId}: ${error}`);
+        throw new InternalServerErrorException('Failed to cancel reservation');
+      }
   }
 
  /**
@@ -198,7 +215,8 @@ export class InventoryService {
   * @returns Promise<number> 
   */
   async checkAvailability(productId: string): Promise<number> {
-    const [inventoryRecord] = await this.db
+    try {
+      const [inventoryRecord] = await this.db
       .select()
       .from(inventory)
       .where(eq(inventory.productId, productId));
@@ -208,6 +226,10 @@ export class InventoryService {
     }
 
     return inventoryRecord.quantity - inventoryRecord.reserved;
+    } catch (error) {
+      this.logger.error(`Error checking availability for product ${productId}: ${error}`);
+      throw new InternalServerErrorException('Failed to check availability');
+    }
   }
 
   /**
@@ -275,10 +297,11 @@ export class InventoryService {
 
   /**
    * ------------- Admin: Get all inventory ------
-   * @returns  Promise<any[] | []>
+   * @returns  Promise<any[]>
    */
-  async getAllInventory(): Promise<any[] | []> {
-    const inventoryList = await this.db
+  async getAllInventory(): Promise<any[] > {
+    try {
+      const inventoryList = await this.db
       .select({
         id: inventory.id,
         productId: inventory.productId,
@@ -293,6 +316,10 @@ export class InventoryService {
       .leftJoin(products, eq(inventory.productId, products.id));
 
     return inventoryList;
+    } catch (error) {
+      this.logger.error('Error getting all inventory', error);
+      throw new InternalServerErrorException('Failed to get all inventory');
+    }
   }
   
 }

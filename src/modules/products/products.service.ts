@@ -9,7 +9,7 @@ import { eq, gte, lte, and, sql, desc, ilike } from 'drizzle-orm';
 import { products, categories, inventory } from 'src/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { CreateProductDto, UpdateProductDto, SearchProductsDto } from './dto';
-import { ProductResponse } from './dto/productResponse.dto';
+import { ProductResponse } from './dto';
 import * as schema from 'src/database/schema';
 
 @Injectable()

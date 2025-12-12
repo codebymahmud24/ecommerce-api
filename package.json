@@ -25,6 +25,7 @@
     "db:seed": "ts-node -r tsconfig-paths/register scripts/seed.ts"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -33,6 +34,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.3",
     "@types/cookie-parser": "^1.4.10",
+    "audit": "^0.0.6",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
@@ -40,8 +42,10 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
+    "fix": "^0.0.6",
     "helmet": "^8.1.0",
     "nestjs-rate-limiter": "^3.1.0",
+    "npm": "^11.7.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",

@@ -7,14 +7,3 @@ export interface AuthResponse {
   };
   access_token: string;
 }
-
-export interface userWithoutPassword {
-  id: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
-}

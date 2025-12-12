@@ -10,9 +10,15 @@ import { CartModule } from './modules/cart/cart.module';
 import { ProductsModule } from './modules/products/products.module';
 import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 24 * 60 * 60 * 1000, // for 1 days
+      max: 20, // number of items
+    }),
     // Make ConfigModule global
     ConfigModule.forRoot({
       isGlobal: true, // <-- important
