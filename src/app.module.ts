@@ -11,6 +11,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { CouponsModule } from './modules/coupons/coupons.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { CacheModule } from '@nestjs/cache-manager';
     OrderModule,
     InventoryModule,
     CartModule,
-    CategoriesModule
+    CategoriesModule,
+    CouponsModule
   ],
   controllers: [HealthController],
   providers: [],

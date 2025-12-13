@@ -25,7 +25,7 @@ export class UsersService {
       if (!user) return null;
       return user;
     } catch (error) {
-      this.logger.error('Error creating user', error.stack);
+      this.logger.error('Error creating user', error.message);
       throw new Error(error.message);
     }
   }
@@ -45,7 +45,7 @@ export class UsersService {
       if (!user) return null;
       return user;
     } catch (error) {
-      this.logger.error('Error finding user by email', error.stack);
+      this.logger.error('Error finding user by email', error.message);
       throw new Error(error.message);
     }
   }
@@ -62,7 +62,7 @@ export class UsersService {
       if (!user) return null;
       return user;
     } catch (error) {
-      this.logger.error('Error finding user by ID', error.stack);
+      this.logger.error('Error finding user by ID', error.message);
       throw new Error(error.message);
     }
   }
@@ -84,7 +84,7 @@ export class UsersService {
       if (!updatedUser) return null;
       return updatedUser;
     } catch (error) {
-      this.logger.error('Error updating user', error.stack);
+      this.logger.error('Error updating user', error.message);
       throw new Error(error.message);
     }
   }

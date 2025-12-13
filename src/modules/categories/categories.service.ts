@@ -74,7 +74,7 @@ export class CategoriesService {
 
       return categoriesWithCount;
     } catch (error) {
-      this.logger.error('Error fetching categories', error.stack);
+      this.logger.error('Error fetching categories', error.message);
       throw new InternalServerErrorException('Failed to fetch categories');
     }
   }
@@ -115,7 +115,7 @@ export class CategoriesService {
       };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
-      this.logger.error(`Error finding category ${id}`, error.stack);
+      this.logger.error(`Error finding category ${id}`, error.message);
       throw new InternalServerErrorException('Failed to fetch category');
     }
   }
@@ -156,7 +156,7 @@ export class CategoriesService {
       };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
-      this.logger.error(`Error finding category by slug: ${slug}`, error.stack);
+      this.logger.error(`Error finding category by slug: ${slug}`, error.message);
       throw new InternalServerErrorException('Failed to fetch category');
     }
   }
@@ -211,7 +211,7 @@ export class CategoriesService {
       ) {
         throw error;
       }
-      this.logger.error(`Error updating category ${id}`, error.stack);
+      this.logger.error(`Error updating category ${id}`, error.message);
       throw new InternalServerErrorException('Failed to update category');
     }
   }
@@ -254,7 +254,7 @@ export class CategoriesService {
       if (error instanceof NotFoundException || error instanceof ConflictException) {
         throw error;
       }
-      this.logger.error(`Error deleting category ${id}`, error.stack);
+      this.logger.error(`Error deleting category ${id}`, error.message);
       throw new InternalServerErrorException('Failed to delete category');
     }
   }
@@ -282,7 +282,7 @@ export class CategoriesService {
 
       return results;
     } catch (error) {
-      this.logger.error('Error searching categories', error.stack);
+      this.logger.error('Error searching categories', error.message);
       throw new InternalServerErrorException('Failed to search categories');
     }
   }
@@ -310,7 +310,7 @@ export class CategoriesService {
 
       return popularCategories;
     } catch (error) {
-      this.logger.error('Error fetching popular categories', error.stack);
+      this.logger.error('Error fetching popular categories', error.message);
       throw new InternalServerErrorException('Failed to fetch popular categories');
     }
   }

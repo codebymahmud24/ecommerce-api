@@ -79,8 +79,12 @@ export class CartService {
       await this.cacheManager.set(this.getCartKey(userId), cart, this.CART_TTL);
       return cart;
     } catch (error) {
-      this.logger.error('Error adding item to cart', error.stack);
-      throw new Error(error);
+      this.logger.error('Error adding item to cart', error.message);
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      } else {
+        throw new Error(error);
+      }
     }
   }
 
@@ -118,8 +122,12 @@ export class CartService {
       await this.cacheManager.set(this.getCartKey(userId), cart, this.CART_TTL);
       return cart;
     } catch (error) {
-      this.logger.error('Error updating item in cart', error.stack);
-      throw new Error(error);
+      this.logger.error('Error updating item in cart', error.message);
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      } else {
+        throw new Error(error);
+      }
     }
   }
 
@@ -148,8 +156,12 @@ export class CartService {
 
       return cart;
     } catch (error) {
-      this.logger.error('Error removing item from cart', error.stack);
-      throw new Error(error);
+      this.logger.error('Error removing item from cart', error.message);
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      } else {
+        throw new Error(error);
+      }
     }
   }
 

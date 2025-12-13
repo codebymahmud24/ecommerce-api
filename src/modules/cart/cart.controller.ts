@@ -39,8 +39,9 @@ export class CartController {
 
   @Delete('items/:productId')
   @ApiOperation({ summary: 'Remove item from cart' })
-  async removeItem(@Request() req, @Param('productId') productId: string) : Promise<Cart> {
-    return this.cartService.removeItem(req.user.id, productId);
+  async removeItem(@Request() req, @Param('productId') productId: string) : Promise< {message:string}> {
+    await this.cartService.removeItem(req.user.id, productId);
+    return {"message": "Item removed from cart successfully"}
   }
 
   @Delete()

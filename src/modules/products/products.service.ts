@@ -67,7 +67,7 @@ export class ProductsService {
         return product;
       });
     } catch (error) {
-      this.logger.error('Error creating product', error.stack);
+      this.logger.error('Error creating product', error.message);
       throw new InternalServerErrorException('Failed to create product');
     }
   }
@@ -98,7 +98,7 @@ export class ProductsService {
         .offset(offset)
         .orderBy(desc(products.createdAt));
     } catch (error) {
-     this.logger.error('Error fetching products', error.stack);
+     this.logger.error('Error fetching products', error.message);
       throw new InternalServerErrorException('Failed to fetch products');
     }
   }
@@ -120,7 +120,7 @@ export class ProductsService {
       if (!product) throw new NotFoundException('Product not found');
       return product;
     } catch (error) {
-      this.logger.error(`Error finding product ${id}`, error.stack);
+      this.logger.error(`Error finding product ${id}`, error.message);
       throw new InternalServerErrorException('Failed to fetch product');
     }
   }
@@ -154,7 +154,7 @@ export class ProductsService {
       if (!updatedProduct) throw new NotFoundException('Product not found');
       return updatedProduct;
     } catch (error) {
-      this.logger.error(`Error updating product ${id}`, error.stack);
+      this.logger.error(`Error updating product ${id}`, error.message);
       throw new InternalServerErrorException('Failed to update product');
     }
   }
@@ -175,7 +175,7 @@ export class ProductsService {
       if (!product) throw new NotFoundException('Product not found');
       return { message: 'Product deleted successfully' };
     } catch (error) {
-      this.logger.error(`Error deleting product ${id}`, error.stack);
+      this.logger.error(`Error deleting product ${id}`, error.message);
       throw new InternalServerErrorException('Failed to delete product');
     }
   }
@@ -215,7 +215,7 @@ export class ProductsService {
         .offset(offset)
         .orderBy(desc(products.createdAt));
     } catch (error) {
-      this.logger.error('Error searching products', error.stack);
+      this.logger.error('Error searching products', error.message);
       throw new InternalServerErrorException('Failed to search products');
     }
   }

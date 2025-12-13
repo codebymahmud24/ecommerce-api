@@ -48,8 +48,12 @@ export class AuthService {
         access_token,
       };
     } catch (error) {
-      this.logger.error('Error registering user', error.stack);
-      throw new Error(error);
+      this.logger.error('Error registering user', error.message);
+      if (error instanceof ConflictException) {
+        throw new ConflictException(error.message);
+      } else {
+        throw new Error(error);
+      }
     }
   }
 
@@ -81,8 +85,13 @@ export class AuthService {
         access_token,
       };
     } catch (error) {
-      this.logger.error('Error logging in user', error.stack);
-      throw new Error(error);
+      this.logger.error('Error logging in user',  error.message);
+      if(error instanceof UnauthorizedException){
+        throw new UnauthorizedException(error.message)
+      }
+      else{
+        throw new Error(error)
+      }
     }
   }
 
@@ -100,8 +109,12 @@ export class AuthService {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
     } catch (error) {
-      this.logger.error('Error validating user', error.stack);
-      throw new Error(error);
+      this.logger.error('Error validating user', error.message);
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException(error.message);
+      } else {
+        throw new Error(error);
+      }
     }
   }
 
