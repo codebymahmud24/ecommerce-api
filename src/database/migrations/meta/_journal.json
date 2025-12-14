@@ -13,6 +13,13 @@
       "when": 1765597035764,
       "tag": "0001_abnormal_triton",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765686164308,
+      "tag": "0002_aberrant_whistler",
+      "breakpoints": true
     }
   ]
 }

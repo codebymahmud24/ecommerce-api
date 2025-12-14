@@ -23,8 +23,20 @@ interface ReservationResult {
 interface BatchReservationResult {
   reservationId: string;
   productId: string;
+  quantity: number;
   expiresAt: Date;
 }
+
+
+/*
+ * WORKFLOW OVERVIEW:
+ * 
+ * 1. User adds items to cart (no reservation yet)
+ * 2. User clicks "Checkout" → RESERVE inventory (15-min hold)
+ * 3. User completes payment → CONFIRM reservation (deduct from stock)
+ * 4. Payment fails OR cart abandoned → CANCEL reservation (release stock)
+ * 5. Reservation expires (15 min) → AUTO-CANCEL (background cleanup)
+ */
 
 @Injectable()
 export class InventoryService {
@@ -320,6 +332,74 @@ export class InventoryService {
       this.logger.error('Error getting all inventory', error);
       throw new InternalServerErrorException('Failed to get all inventory');
     }
+  }
+
+  /**
+   * ------------- Batch reserve inventory for multiple products ------
+   * @param items 
+   * @param userId 
+   * @param sessionId 
+   * @returns Promise<BatchReservationResult[]>
+   */
+   async batchReserveInventory(
+    items: Array<{ productId: string; quantity: number }>,
+    userId?: string,
+    sessionId?: string,
+  ): Promise<Array<{ reservationId: string; productId: string; quantity: number; expiresAt: Date }>> {
+    return await this.db.transaction(async (tx) => {
+      const reservations = [];
+
+      for (const item of items) {
+        const [inventoryRecord] = await tx
+          .select()
+          .from(inventory)
+          .where(eq(inventory.productId, item.productId))
+          .for('update');
+
+        if (!inventoryRecord) {
+          throw new BadRequestException(`Product ${item.productId} not found in inventory`);
+        }
+
+        const availableQuantity = inventoryRecord.quantity - inventoryRecord.reserved;
+
+        if (availableQuantity < item.quantity) {
+          throw new BadRequestException(
+            `Insufficient inventory for product ${item.productId}. Available: ${availableQuantity}`,
+          );
+        }
+
+        await tx
+          .update(inventory)
+          .set({
+            reserved: sql`${inventory.reserved} + ${item.quantity}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(inventory.productId, item.productId));
+
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + this.RESERVATION_TTL_MINUTES);
+
+        const [reservation] = await tx
+          .insert(inventoryReservations)
+          .values({
+            productId: item.productId,
+            quantity: item.quantity,
+            userId,
+            sessionId,
+            expiresAt,
+          })
+          .returning();
+
+        reservations.push({
+          reservationId: reservation.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          expiresAt: reservation.expiresAt,
+        });
+      }
+
+      return reservations;
+    });
   }
   
 }

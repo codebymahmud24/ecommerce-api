@@ -6,6 +6,7 @@ import { OrderStatus } from 'src/common/enums/orderStatus.enum';
 
 export const orderStatusEnum = pgEnum('order_status', Object.values(OrderStatus) as [string, ...string[]]);
 
+// Schema for orders table
 export const orders = pgTable('orders', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id).notNull(),
@@ -21,6 +22,7 @@ export const orders = pgTable('orders', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Schema for order items associated with an order
 export const orderItems = pgTable('order_items', {
   id: uuid('id').defaultRandom().primaryKey(),
   orderId: uuid('order_id').references(() => orders.id, { onDelete: 'cascade' }).notNull(),
@@ -30,10 +32,21 @@ export const orderItems = pgTable('order_items', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Schema to track order status history
 export const orderStatusHistory = pgTable('order_status_history', {
   id: uuid('id').defaultRandom().primaryKey(),
   orderId: uuid('order_id').references(() => orders.id, { onDelete: 'cascade' }).notNull(),
   status: orderStatusEnum('status').notNull(),
   note: text('note'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+//  Schema to track reservations with Inventory per order
+export const orderReservations = pgTable('order_reservations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  orderId: uuid('order_id').references(() => orders.id, { onDelete: 'cascade' }).notNull(),
+  reservationId: uuid('reservation_id').notNull(), // Inventory reservation ID
+  productId: uuid('product_id').notNull(),
+  quantity: integer('quantity').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
