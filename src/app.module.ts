@@ -12,6 +12,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CouponsModule } from './modules/coupons/coupons.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     CategoriesModule,
     CouponsModule,
     OrdersModule,
+    PaymentsModule
   ],
   controllers: [HealthController],
   providers: [],

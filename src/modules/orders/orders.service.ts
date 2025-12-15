@@ -183,6 +183,7 @@ export class OrdersService {
     }
   }
 
+
   async findAllByUser(userId: string, page = 1, limit = 20) {
     try {
       const offset = (page - 1) * limit;
@@ -245,7 +246,66 @@ export class OrdersService {
   }
 
   /**
-* STEP 2: CANCEL ORDER & RELEASE RESERVATIONS
+   * STEP 2: CONFIRM PAYMENT & CONFIRM RESERVATIONS
+   * This is called by PaymentsService when payment succeeds
+   */
+  async confirmPayment(orderId: string, paymentIntentId: string): Promise<void> {
+    try {
+      await this.db.transaction(async (tx) => {
+        // Get all reservations for this order
+        const reservations = await tx
+          .select()
+          .from(orderReservations)
+          .where(eq(orderReservations.orderId, orderId));
+
+        // ⭐ CONFIRM ALL RESERVATIONS (deduct from actual inventory)
+        for (const reservation of reservations) {
+          try {
+            await this.inventoryService.confirmReservation(reservation.reservationId);
+            this.logger.verbose(`Confirmed reservation ${reservation.reservationId} for order ${orderId}`);
+          } catch (error) {
+            this.logger.error(`Failed to confirm reservation ${reservation.reservationId}`, error);
+            // In production, you might want to handle this more gracefully
+            throw new BadRequestException('Failed to confirm inventory reservation');
+          }
+        }
+
+        // Update order status to PROCESSING
+        await tx
+          .update(orders)
+          .set({
+            paymentIntentId,
+            status: OrderStatus.PROCESSING,
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, orderId));
+
+        // Add to status history
+        await tx.insert(orderStatusHistory).values({
+          orderId,
+          status: OrderStatus.PROCESSING,
+          note: 'Payment confirmed, order being processed',
+        });
+
+        // Delete reservation records (they're now confirmed)
+        await tx
+          .delete(orderReservations)
+          .where(eq(orderReservations.orderId, orderId));
+      });
+8
+      this.logger.verbose(`Payment confirmed for order ${orderId}, inventory deducted`);
+    } catch (error) {
+      this.logger.error(`Error confirming payment for order ${orderId}`, error.message);
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new Error(error);
+      }
+    }
+  }
+
+  /**
+* STEP 3: CANCEL ORDER & RELEASE RESERVATIONS
 * Called when user cancels order or payment fails
 */
   async cancelOrder(orderId: string, userId: string): Promise<void> {
@@ -318,5 +378,48 @@ export class OrdersService {
     }
   }
 
+  /**
+   * STEP 4: HANDLE PAYMENT FAILURE
+   * Called by PaymentsService webhook when payment fails
+   */
+  async handlePaymentFailure(orderId: string): Promise<void> {
+    try {
+      this.logger.warn(`Payment failed for order ${orderId}, releasing inventory`);
+
+      await this.db.transaction(async (tx) => {
+        const reservations = await tx
+          .select()
+          .from(orderReservations)
+          .where(eq(orderReservations.orderId, orderId));
+
+        // ⭐ CANCEL ALL RESERVATIONS
+        for (const reservation of reservations) {
+          await this.inventoryService.cancelReservation(reservation.reservationId);
+        }
+
+        // Update order status
+        await tx
+          .update(orders)
+          .set({
+            status: OrderStatus.CANCELLED,
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, orderId));
+
+        await tx.insert(orderStatusHistory).values({
+          orderId,
+          status: OrderStatus.CANCELLED,
+          note: 'Payment failed, order cancelled',
+        });
+
+        await tx
+          .delete(orderReservations)
+          .where(eq(orderReservations.orderId, orderId));
+      });
+    } catch (error) {
+      this.logger.error(`Error handling payment failure for order ${orderId}`, error.message);
+      throw new Error(error);
+    }
+  }
 
 }

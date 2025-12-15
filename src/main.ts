@@ -9,13 +9,14 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { db } from './database';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import  cookieParser from 'cookie-parser';
+import * as express from 'express';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   
   // Create Nest app
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn',   'debug', 'verbose'],
+    logger: ['error', 'warn', 'log',  'debug', 'verbose'],
   });
 
   logger.verbose('🔥 HOT RELOAD WORKS , Is it' + new Date().toISOString());
@@ -24,6 +25,20 @@ async function bootstrap() {
   const nodeEnv = configService.get('NODE_ENV') || 'development';
   const port = configService.get('PORT') || 3000;
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
+
+  // Stripe webhook endpoint and its takes raw body so we need to parse the raw body manually
+  app.use(
+    '/api/v1/payments/webhook',
+    express.raw({ type: 'application/json' }),
+    (req, res, next) => {
+      if (req.body && Buffer.isBuffer(req.body)) {
+        req.rawBody = req.body;
+      }
+      next();
+    },
+  );
+
+  app.use(express.json());
 
   // Cookies
   app.use(cookieParser());
