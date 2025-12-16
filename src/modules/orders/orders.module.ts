@@ -5,9 +5,11 @@ import { DatabaseModule } from 'src/database/database.module';
 import { CouponsModule } from '../coupons/coupons.module';
 import { CartModule } from '../cart/cart.module';
 import { InventoryModule } from '../inventory/inventory.module';
+import { UsersModule } from '../users/users.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [DatabaseModule, InventoryModule, CartModule, CouponsModule],
+  imports: [DatabaseModule, InventoryModule, CartModule, CouponsModule, NotificationsModule, UsersModule],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],

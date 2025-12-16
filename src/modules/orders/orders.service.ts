@@ -1,3 +1,5 @@
+import { UsersService } from './../users/users.service';
+import { NotificationsService } from './../notifications/notifications.service';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { OrderStatus } from 'src/common/enums/orderStatus.enum';
@@ -27,6 +29,8 @@ export class OrdersService {
     private inventoryService: InventoryService,
     private cartService: CartService,
     private couponsService: CouponsService,
+    private notificationsService: NotificationsService,
+    private usersService: UsersService
   ) { }
 
   /**
@@ -133,11 +137,11 @@ export class OrdersService {
       throw new Error(error);
     }
   }
-  
+
   /**
   * Update order status with state machine validation
   */
-  async updateStatus(orderId: string, newStatus: OrderStatus, note?: string): Promise<void> {
+  async updateStatus(orderId: string, newStatus: OrderStatus, note?: string,): Promise<void> {
     try {
       const [order] = await this.db
         .select()
@@ -171,6 +175,9 @@ export class OrdersService {
         });
       });
 
+      // Send notification to customer about status change
+      // ✅ Send email asynchronously (don't wait for it)
+      this.sendStatusEmailAsync(orderId, order.userId, newStatus);
       this.logger.log(`Order ${orderId} status updated to ${newStatus}`);
 
     } catch (error) {
@@ -183,7 +190,17 @@ export class OrdersService {
     }
   }
 
-
+  // Separate method to send email without blocking
+  private sendStatusEmailAsync(orderId: string, userId: string, status: OrderStatus): void {
+    this.usersService.findById(userId)
+      .then(({ email }) => {
+        return this.notificationsService.sendOrderStatusUpdate(orderId, email, status);
+      })
+      .catch((error) => {
+        // Log but don't throw - email failure shouldn't break the flow
+        this.logger.error(`Failed to send status email for order ${orderId}`, error);
+      });
+  }
   async findAllByUser(userId: string, page = 1, limit = 20) {
     try {
       const offset = (page - 1) * limit;
@@ -292,7 +309,7 @@ export class OrdersService {
           .delete(orderReservations)
           .where(eq(orderReservations.orderId, orderId));
       });
-8
+      8
       this.logger.verbose(`Payment confirmed for order ${orderId}, inventory deducted`);
     } catch (error) {
       this.logger.error(`Error confirming payment for order ${orderId}`, error.message);

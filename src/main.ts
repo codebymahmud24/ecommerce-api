@@ -16,7 +16,7 @@ async function bootstrap() {
   
   // Create Nest app
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log',  'debug', 'verbose'],
+    logger: ['error', 'warn', 'debug', 'verbose'],
   });
 
   logger.verbose('🔥 HOT RELOAD WORKS , Is it' + new Date().toISOString());
