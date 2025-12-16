@@ -20,6 +20,13 @@
       "when": 1765686164308,
       "tag": "0002_aberrant_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765866116573,
+      "tag": "0003_whole_silvermane",
+      "breakpoints": true
     }
   ]
 }

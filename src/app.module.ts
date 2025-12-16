@@ -13,6 +13,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { CouponsModule } from './modules/coupons/coupons.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -42,6 +43,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     CouponsModule,
     OrdersModule,
     PaymentsModule,
+    ReviewsModule,
     NotificationsModule,
   ],
   controllers: [HealthController],
