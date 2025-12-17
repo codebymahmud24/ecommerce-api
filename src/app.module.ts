@@ -15,6 +15,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -30,8 +31,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     }),
     RateLimiterModule.register({
       for: 'Express',
-      points: 10,
-      duration: 1,
+      points: 10, // 10 requests 
+      duration: 1, // per second (1s)
     }), // 10 requests in 1 second,
     DatabaseModule,
     AuthModule,
@@ -45,6 +46,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     PaymentsModule,
     ReviewsModule,
     NotificationsModule,
+    AdminModule
   ],
   controllers: [HealthController],
   providers: [],
