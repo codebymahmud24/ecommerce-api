@@ -37,6 +37,8 @@
     "@types/cookie-parser": "^1.4.10",
     "audit": "^0.0.6",
     "bcrypt": "^6.0.0",
+    "cache-manager": "^7.2.7",
+    "cache-manager-redis-yet": "^5.1.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "compression": "^1.8.1",
@@ -51,6 +53,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",
+    "redis": "^5.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "stripe": "^20.0.0"

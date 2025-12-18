@@ -52,7 +52,7 @@ export class NotificationsService {
     `;
   }
 
-  async sendOrderStatusUpdate(orderId: string, userEmail: string, status: OrderStatus) {
+  async sendOrderStatusUpdate(orderId: string, userEmail: string, status: OrderStatus) : Promise<void> {
     try {
       const statusConfig = {
         [OrderStatus.PROCESSING]: {

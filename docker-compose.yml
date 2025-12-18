@@ -11,7 +11,17 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - ecommerce
-
+      
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce
+    command: redis-server --appendonly yes
+    
   app:
     build:
       context: .
@@ -23,13 +33,15 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:password@postgres:5432/ecommerce
+      REDIS_URL: redis://redis:6379
     depends_on:
       - postgres
+      - redis
     ports:
       - "3000:3000"
     networks:
       - ecommerce
-
+      
   pg-admin:
     image: dpage/pgadmin4
     environment:
@@ -41,10 +53,11 @@ services:
       - postgres
     networks:
       - ecommerce
-
+      
 volumes:
   postgres_data:
-
+  redis_data:
+  
 networks:
   ecommerce:
     driver: bridge

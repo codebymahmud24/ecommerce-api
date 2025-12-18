@@ -4,9 +4,10 @@ import { AdminController } from './admin.controller';
 import { OrdersModule } from '../orders/orders.module';
 import { ProductsModule } from '../products/products.module';
 import { InventoryModule } from '../inventory/inventory.module';
+import { DatabaseModule } from 'src/database/database.module';
 
 @Module({
-   imports: [OrdersModule, ProductsModule, InventoryModule],
+   imports: [OrdersModule, ProductsModule, InventoryModule, DatabaseModule],
   controllers: [AdminController],
   providers: [AdminService],
 })

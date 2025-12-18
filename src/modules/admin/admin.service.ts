@@ -1,10 +1,8 @@
-// src/modules/admin/admin.service.ts
 import { Injectable, Inject } from '@nestjs/common';
 import { sql, gte, lte, eq, desc } from 'drizzle-orm';
 import { orders, products, users, orderItems } from '../../database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from "src/database"
-
 
 @Injectable()
 export class AdminService {
@@ -13,9 +11,12 @@ export class AdminService {
   ) {}
 
   /**
-   * Get dashboard statistics
+   * ---------------- ADMIN DASHBOARD STATS -----------------
+   * @param startDate
+   * @param endDate 
+   * @returns 
    */
-  async getDashboardStats(startDate?: Date, endDate?: Date) {
+  async getDashboardStats(startDate?: Date, endDate?: Date) :Promise<any> {
     const dateFilter = [];
     if (startDate) dateFilter.push(gte(orders.createdAt, startDate));
     if (endDate) dateFilter.push(lte(orders.createdAt, endDate));
@@ -104,9 +105,11 @@ export class AdminService {
   }
 
   /**
-   * Get sales analytics
+   * --------------------- SALES ANALYTICS ------------------
+   * @param days
+   * @returns 
    */
-  async getSalesAnalytics(days = 30) {
+  async getSalesAnalytics(days = 30): Promise<any[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -125,9 +128,10 @@ export class AdminService {
   }
 
   /**
-   * Get low stock products
+   * ------------------- INVENTORY MANAGEMENT ---------------
+   * @returns 
    */
-  async getLowStockProducts() {
+  async getLowStockProducts() : Promise<any[]> {
     const lowStockProducts = await this.db
       .select({
         productId: products.id,
@@ -144,9 +148,10 @@ export class AdminService {
   }
 
   /**
-   * Get customer insights
+   * ---------------------- CUSTOMER INSIGHTS ------------------
+   * @returns 
    */
-  async getCustomerInsights() {
+  async getCustomerInsights(): Promise<any[]> {
     const topCustomers = await this.db
       .select({
         userId: users.id,

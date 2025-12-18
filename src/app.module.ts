@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RateLimiterModule } from 'nestjs-rate-limiter';
 import { HealthController } from './modules/health/health.controller';
 import { DatabaseModule } from './database/database.module';
@@ -10,30 +10,41 @@ import { ProductsModule } from './modules/products/products.module';
 import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 import { CouponsModule } from './modules/coupons/coupons.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { HealthModule } from './modules/health/healt.module';
 
 @Module({
   imports: [
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 24 * 60 * 60 * 1000, // for 1 days
-      max: 20, // number of items
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        store: await redisStore({
+          socket: {
+            host: configService.get('REDIS_HOST', 'redis'),
+            port: configService.get('REDIS_PORT', 6379),
+          },
+          // password: configService.get('REDIS_PASSWORD'), // Uncomment if using password
+          ttl: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+        }),
+      }),
     }),
-    // Make ConfigModule global
     ConfigModule.forRoot({
-      isGlobal: true, // <-- important
-      envFilePath: '.env', // optional, default is .env
+      isGlobal: true,
+      envFilePath: '.env',
     }),
     RateLimiterModule.register({
       for: 'Express',
-      points: 10, // 10 requests 
-      duration: 1, // per second (1s)
-    }), // 10 requests in 1 second,
+      points: 10,
+      duration: 1,
+    }),
     DatabaseModule,
     AuthModule,
     UsersModule,
@@ -46,9 +57,10 @@ import { AdminModule } from './modules/admin/admin.module';
     PaymentsModule,
     ReviewsModule,
     NotificationsModule,
-    AdminModule
+    AdminModule,
+    HealthModule,
   ],
-  controllers: [HealthController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}

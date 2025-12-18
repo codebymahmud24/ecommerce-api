@@ -1,6 +1,16 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { users, products, categories, inventory, inventoryReservations, reviews, reviewHelpfulness, orders, coupons } from './schema/index';
+import {
+  users,
+  products,
+  categories,
+  inventory,
+  inventoryReservations,
+  reviews,
+  reviewHelpfulness,
+  orders,
+  coupons,
+} from './schema/index';
 
 import * as dotenv from 'dotenv';
 
@@ -19,7 +29,7 @@ export const schema = {
   coupons,
   inventoryReservations,
   reviews,
-  reviewHelpfulness
+  reviewHelpfulness,
 };
 
 export const db = drizzle(pool, { schema });
