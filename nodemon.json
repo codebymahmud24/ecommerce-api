@@ -5,6 +5,6 @@
   "exec": "nest start",
   "legacyWatch": true,
   "polling": true,
-  "delay": 2000,
+  "delay": 1000,
   "verbose": true
 }
