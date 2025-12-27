@@ -2,6 +2,7 @@
 
 ## Project Structure
 
+``` bash
 ecommerce-api/
 ├── package.json                          # ✅ Root directory - dependencies and scripts
 ├── package-lock.json                     # Auto-generated
@@ -141,6 +142,7 @@ ecommerce-api/
 │
 └── dist/                                 # Compiled output (auto-generated)
     └── ...
+```
 
 KEY FILES LOCATIONS:
 ====================
@@ -400,70 +402,3 @@ I'll now provide the complete implementation files for each module. Would you li
 3. Advanced features (Inventory reservation, Payment processing)
 
 Let me know which part you'd like to see first!
-
-   */
-  async batchReserveInventory(
-    items: Array<{ productId: string; quantity: number }>,
-    userId?: string,
-    sessionId?: string,
-  ): Promise<BatchReservationResult[] | []> {
-    return await this.db.transaction(async (tx) => {
-      if (items.length === 0) return [];
-      const reservations = [];
-
-      for (const item of items) {
-        const [inventoryRecord] = await tx
-          .select()
-          .from(inventory)
-          .where(eq(inventory.productId, item.productId))
-          .for('update');
-
-        if (!inventoryRecord) {
-          throw new BadRequestException(
-            `Product ${item.productId} not found in inventory`,
-          );
-        }
-
-        const availableQuantity =
-          inventoryRecord.quantity - inventoryRecord.reserved;
-
-        if (availableQuantity < item.quantity) {
-          throw new BadRequestException(
-            `Insufficient inventory for product ${item.productId}. Available: ${availableQuantity}`,
-          );
-        }
-
-        await tx
-          .update(inventory)
-          .set({
-            reserved: sql`${inventory.reserved} + ${item.quantity}`,
-            updatedAt: new Date(),
-          })
-          .where(eq(inventory.productId, item.productId));
-
-        const expiresAt = new Date();
-        expiresAt.setMinutes(
-          expiresAt.getMinutes() + this.RESERVATION_TTL_MINUTES,
-        );
-
-        const [reservation] = await tx
-          .insert(inventoryReservations)
-          .values({
-            productId: item.productId,
-            quantity: item.quantity,
-            userId,
-            sessionId,
-            expiresAt,
-          })
-          .returning();
-
-        reservations.push({
-          reservationId: reservation.id,
-          productId: item.productId,
-          expiresAt: reservation.expiresAt,
-        });
-      }
-
-      return reservations;
-    });
-  }
